@@ -20,14 +20,24 @@ def mychat(prompt):
     
     return response.choices[0].text
 
+def mydraw(prompt):
+    response = openai.Image.create(
+        size = '512x512',
+        prompt=prompt,
+        n = 1,
+        response_format="url"
+    )
+    return response["data"][0]["url"]
 
 @app.route('/chatbot') 
 def chatbot():
-    try:
         pergunta = request.args.get('pergunta')
-        resposta = mychat(pergunta)
-    except Exception as e:
-        resposta = "Ocorreu um erro: " + str(e)
-    return jsonify(resposta=resposta)
-
+        if pergunta[0:4] == 'img:':
+            pergunta = pergunta.replace("img:", "")
+            resposta = mydraw(pergunta)
+            return jsonify(url_imagem=resposta, resposta="")
+        else:
+            resposta = mychat(pergunta)
+            return jsonify(resposta=resposta)
+        
 app.run()
